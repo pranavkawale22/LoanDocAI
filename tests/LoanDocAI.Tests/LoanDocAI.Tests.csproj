@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\LoanDocAI.Api\LoanDocAI.Api.csproj" />
+    <ProjectReference Include="..\..\tools\LoanDocAI.DataGen\LoanDocAI.DataGen.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,10 @@
+{
+  "document_type": "bank_statement",
+  "applicant_name": "Nandini Pillai",
+  "bank_name": "Deccan Federal Bank",
+  "statement_from": "2026-08-01",
+  "statement_to": "2026-08-31",
+  "opening_balance": 127554.09,
+  "closing_balance": 123361.57,
+  "total_credits": 104574.35
+}

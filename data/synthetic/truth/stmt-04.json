@@ -1,0 +1,10 @@
+{
+  "document_type": "bank_statement",
+  "applicant_name": "Vikram Naidu",
+  "bank_name": "Narmada Commercial Bank",
+  "statement_from": "2026-02-01",
+  "statement_to": "2026-02-28",
+  "opening_balance": 58685.84,
+  "closing_balance": 92077.79,
+  "total_credits": 139763.19
+}

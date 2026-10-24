@@ -1,0 +1,10 @@
+{
+  "document_type": "bank_statement",
+  "applicant_name": "Sneha Shaikh",
+  "bank_name": "Sahyadri Cooperative Bank",
+  "statement_from": "2026-12-01",
+  "statement_to": "2026-12-31",
+  "opening_balance": 202799.20,
+  "closing_balance": 50848.45,
+  "total_credits": 54851.00
+}

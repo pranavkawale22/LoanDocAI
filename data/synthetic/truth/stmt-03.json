@@ -1,0 +1,10 @@
+{
+  "document_type": "bank_statement",
+  "applicant_name": "Imran Kulkarni",
+  "bank_name": "Utkal Federal Bank",
+  "statement_from": "2026-12-01",
+  "statement_to": "2026-12-31",
+  "opening_balance": 25658.05,
+  "closing_balance": 148721.14,
+  "total_credits": 214841.45
+}

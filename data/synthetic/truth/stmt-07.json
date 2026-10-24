@@ -1,0 +1,10 @@
+{
+  "document_type": "bank_statement",
+  "applicant_name": "Suresh Iyer",
+  "bank_name": "Aravali Cooperative Bank",
+  "statement_from": "2026-11-01",
+  "statement_to": "2026-11-30",
+  "opening_balance": 18921.44,
+  "closing_balance": 150010.48,
+  "total_credits": 198632.69
+}

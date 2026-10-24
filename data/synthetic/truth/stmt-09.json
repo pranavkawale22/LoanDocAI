@@ -1,0 +1,10 @@
+{
+  "document_type": "bank_statement",
+  "applicant_name": "Karthik Patil",
+  "bank_name": "Tungabhadra Rural Bank",
+  "statement_from": "2026-10-01",
+  "statement_to": "2026-10-31",
+  "opening_balance": 7548.87,
+  "closing_balance": 9751.57,
+  "total_credits": 51944.85
+}

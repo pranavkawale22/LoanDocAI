@@ -1,0 +1,10 @@
+{
+  "document_type": "bank_statement",
+  "applicant_name": "Gurpreet Nair",
+  "bank_name": "Malwa Mercantile Bank",
+  "statement_from": "2026-03-01",
+  "statement_to": "2026-03-31",
+  "opening_balance": 367220.60,
+  "closing_balance": 498292.00,
+  "total_credits": 197204.64
+}

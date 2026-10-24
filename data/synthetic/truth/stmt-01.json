@@ -1,0 +1,10 @@
+{
+  "document_type": "bank_statement",
+  "applicant_name": "Arjun Mishra",
+  "bank_name": "Konkan Savings Bank",
+  "statement_from": "2026-03-01",
+  "statement_to": "2026-03-31",
+  "opening_balance": 109850.03,
+  "closing_balance": 23115.09,
+  "total_credits": 28370.04
+}
