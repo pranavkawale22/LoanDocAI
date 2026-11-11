@@ -1,5 +1,8 @@
 using LoanDocAI.Api;
+using LoanDocAI.Api.Integration;
+using LoanDocAI.Api.Security;
 using LoanDocAI.Api.Services;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,10 +12,29 @@ builder.Services.AddOptions<AiOptions>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-// Register Document Extraction Services
+// Security & Webhook configuration
+builder.Services.Configure<WebhookOptions>(builder.Configuration.GetSection(WebhookOptions.SectionName));
+builder.Services.AddSingleton<IHmacSignatureValidator, HmacSignatureValidator>();
+
+// Document Extraction Services
 builder.Services.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
 builder.Services.AddSingleton<IDocumentClassifier, DocumentClassifier>();
 builder.Services.AddSingleton<IDocumentExtractor, PatternDocumentExtractor>();
+
+// Downstream Integration with Polly v8 Resilience Pipeline
+builder.Services.Configure<LosClientOptions>(builder.Configuration.GetSection(LosClientOptions.SectionName));
+builder.Services.AddHttpClient<ILoanOriginationClient, LoanOriginationClient>((sp, client) =>
+{
+    var losOptions = sp.GetRequiredService<IOptions<LosClientOptions>>().Value;
+    client.BaseAddress = new Uri(losOptions.BaseUrl);
+    client.DefaultRequestHeaders.Add("X-Api-Key", losOptions.ApiKey);
+})
+.AddStandardResilienceHandler(options =>
+{
+    options.Retry.MaxRetryAttempts = 3;
+    options.Retry.BackoffType = Polly.DelayBackoffType.Exponential;
+    options.Retry.UseJitter = true;
+});
 
 if (builder.Environment.IsDevelopment())
 {
@@ -31,6 +53,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
+// Public Document Extraction Endpoint
 app.MapPost("/api/extract", async (HttpRequest request, IDocumentExtractor extractor, CancellationToken ct) =>
 {
     if (!request.HasFormContentType)
@@ -76,6 +99,29 @@ app.MapPost("/api/extract", async (HttpRequest request, IDocumentExtractor extra
         return Results.Problem(detail: ex.Message, title: "Extraction Failed");
     }
 }).DisableAntiforgery();
+
+// HMAC-Secured Partner Webhook Endpoint
+app.MapPost("/api/webhooks/document-uploaded", async (
+    HttpRequest request,
+    IHmacSignatureValidator signatureValidator,
+    CancellationToken ct) =>
+{
+    if (!request.Headers.TryGetValue("X-Signature", out var signature))
+    {
+        return Results.Unauthorized();
+    }
+
+    using var memoryStream = new MemoryStream();
+    await request.Body.CopyToAsync(memoryStream, ct);
+    var bodyBytes = memoryStream.ToArray();
+
+    if (!signatureValidator.Validate(bodyBytes, signature))
+    {
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+    }
+
+    return Results.Accepted(value: new { status = "webhook_verified" });
+});
 
 app.Run();
 
