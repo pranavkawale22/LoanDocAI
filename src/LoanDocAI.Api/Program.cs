@@ -1,5 +1,6 @@
 using LoanDocAI.Api;
 using LoanDocAI.Api.Integration;
+using LoanDocAI.Api.Models;
 using LoanDocAI.Api.Security;
 using LoanDocAI.Api.Services;
 using Microsoft.Extensions.Options;
@@ -16,10 +17,11 @@ builder.Services.AddOptions<AiOptions>()
 builder.Services.Configure<WebhookOptions>(builder.Configuration.GetSection(WebhookOptions.SectionName));
 builder.Services.AddSingleton<IHmacSignatureValidator, HmacSignatureValidator>();
 
-// Document Extraction Services
+// Document Extraction & Reconciliation Services
 builder.Services.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
 builder.Services.AddSingleton<IDocumentClassifier, DocumentClassifier>();
 builder.Services.AddSingleton<IDocumentExtractor, PatternDocumentExtractor>();
+builder.Services.AddSingleton<IIncomeReconciliationService, IncomeReconciliationService>();
 
 // Downstream Integration with Polly v8 Resilience Pipeline
 builder.Services.Configure<LosClientOptions>(builder.Configuration.GetSection(LosClientOptions.SectionName));
@@ -45,6 +47,10 @@ var app = builder.Build();
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+
+// Serve the embedded Operator Dashboard from wwwroot
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 if (app.Environment.IsDevelopment())
 {
@@ -99,6 +105,18 @@ app.MapPost("/api/extract", async (HttpRequest request, IDocumentExtractor extra
         return Results.Problem(detail: ex.Message, title: "Extraction Failed");
     }
 }).DisableAntiforgery();
+
+// Cross-Document Income Reconciliation Endpoint
+app.MapPost("/api/reconcile", (ReconciliationRequest request, IIncomeReconciliationService service) =>
+{
+    if (request.SalarySlip is null || request.BankStatement is null)
+    {
+        return Results.BadRequest(new { error = "Both salary_slip and bank_statement are required." });
+    }
+
+    var result = service.Reconcile(request.SalarySlip, request.BankStatement);
+    return Results.Ok(result);
+});
 
 // HMAC-Secured Partner Webhook Endpoint
 app.MapPost("/api/webhooks/document-uploaded", async (

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -88,5 +89,43 @@ public class ExtractionEndpointTests(WebApplicationFactory<Program> factory) : I
 
         var response = await client.PostAsync("/api/extract", content);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Post_reconcile_returns_verdict_and_checks()
+    {
+        var client = factory.CreateClient();
+        var request = new
+        {
+            salary_slip = new
+            {
+                applicant_name = "Harish Rao",
+                employer_name = "Orchid Textiles Ltd",
+                pay_month = "2026-01",
+                gross_salary = 120000m,
+                net_salary = 100000m
+            },
+            bank_statement = new
+            {
+                applicant_name = "Harish Rao",
+                bank_name = "Sahyadri Cooperative Bank",
+                statement_from = "2026-01-01",
+                statement_to = "2026-01-31",
+                opening_balance = 25000m,
+                closing_balance = 35000m,
+                total_credits = 105000m
+            }
+        };
+
+        var response = await client.PostAsJsonAsync("/api/reconcile", request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        using var json = JsonDocument.Parse(body);
+        var root = json.RootElement;
+
+        Assert.Equal("Approved", root.GetProperty("status").GetString());
+        Assert.True(root.GetProperty("confidence_score").GetInt32() >= 90);
+        Assert.Equal(4, root.GetProperty("checks").GetArrayLength());
     }
 }
