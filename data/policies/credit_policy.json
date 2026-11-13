@@ -1,0 +1,56 @@
+{
+  "policy_name": "Veda Lending Retail Credit Underwriting Guidelines",
+  "version": "2026.1",
+  "effective_date": "2026-01-01",
+  "clauses": [
+    {
+      "clause_id": "Clause 1.1",
+      "title": "Minimum Monthly Net Income Thresholds",
+      "category": "Income",
+      "content": "Applicants must demonstrate minimum verifiable net monthly salary credited via banking channels: (a) Tier-1 Metros (Mumbai, Delhi-NCR, Bengaluru, Chennai, Hyderabad, Kolkata): INR 25,000 per month; (b) Tier-2 Cities (Pune, Ahmedabad, Jaipur, Lucknow, Nagpur, Indore, Kochi, Surat): INR 20,000 per month; (c) Tier-3 and Other Locations: INR 18,000 per month. Cash salaries are strictly ineligible.",
+      "keywords": ["minimum income", "salary threshold", "tier 1", "tier 2", "tier 3", "metro", "city", "cash salary"]
+    },
+    {
+      "clause_id": "Clause 2.1",
+      "title": "Employment Stability and Minimum Tenure",
+      "category": "Employment",
+      "content": "The applicant must have completed a minimum of 6 months continuous service at their current employer, with total cumulative formal employment history of not less than 12 months across all organizations.",
+      "keywords": ["employment stability", "tenure", "service", "current employer", "work experience", "6 months"]
+    },
+    {
+      "clause_id": "Clause 2.2",
+      "title": "Probation Period Policy",
+      "category": "Employment",
+      "content": "Applicants currently under probationary status are ineligible for unsecured personal loans. EXCEPTION: Probation may be waived if the applicant possesses at least 24 months of continuous prior employment in the same industry and provides a confirmation letter or successful appraisal notice from the current employer.",
+      "keywords": ["probation", "probationary", "notice period", "confirmation letter", "waiver", "same industry"]
+    },
+    {
+      "clause_id": "Clause 3.1",
+      "title": "Fixed Obligation to Income Ratio (FOIR) Limits",
+      "category": "Affordability",
+      "content": "Total existing monthly debt obligations (including EMIs, credit card minimum dues, and proposed loan EMI) divided by Net Monthly Salary must not exceed: (a) 50% for applicants with Net Monthly Salary under INR 50,000; (b) 60% for applicants with Net Monthly Salary of INR 50,000 and above. Any application breaching these caps must be declined.",
+      "keywords": ["foir", "fixed obligation", "debt to income", "emi ratio", "obligation", "50%", "60%"]
+    },
+    {
+      "clause_id": "Clause 4.1",
+      "title": "Maximum Loan Multiplier Cap",
+      "category": "Quantum",
+      "content": "The maximum permissible unsecured loan quantum is strictly capped at 10 times (10x) the verified Net Monthly Salary, subject to an absolute upper limit of INR 15,00,000, whichever is lower.",
+      "keywords": ["maximum loan", "loan multiplier", "10x", "loan quantum", "loan limit", "maximum amount"]
+    },
+    {
+      "clause_id": "Clause 5.1",
+      "title": "Age Criteria and Retirement Ceilings",
+      "category": "Eligibility",
+      "content": "Minimum entry age is 21 years at the time of application submission. Maximum age at loan maturity must not exceed 60 years for salaried individuals or the formal corporate retirement age stipulated by the employer, whichever is earlier.",
+      "keywords": ["age", "minimum age", "maximum age", "retirement", "superannuation", "maturity", "21 years", "60 years"]
+    },
+    {
+      "clause_id": "Clause 6.1",
+      "title": "Bank Account Salary Credit Verification",
+      "category": "Banking",
+      "content": "At least 3 consecutive salary credits must be visibly reflected in the applicant's primary bank account statement. The monthly closing balance must remain non-negative, and the average balance buffer must equal at least 1 times (1x) the proposed monthly EMI.",
+      "keywords": ["bank statement", "salary credit", "3 months", "closing balance", "balance buffer", "overdraft"]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # LoanDocAI 🏦📄
 
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![Tests](https://img.shields.io/badge/Tests-31%20Passed%20(100%25)-emerald)](#automated-evaluation-benchmark)
+[![Tests](https://img.shields.io/badge/Tests-39%20Passed%20(100%25)-emerald)](#automated-evaluation-benchmark)
 [![Evaluation Benchmark](https://img.shields.io/badge/Accuracy-100.0%25-brightgreen)](#automated-evaluation-benchmark)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![GitHub](https://img.shields.io/badge/Repository-pranavkawale22%2FLoanDocAI-181717?logo=github)](https://github.com/pranavkawale22/LoanDocAI)
@@ -249,6 +249,38 @@ Content-Type: application/json
 
 ---
 
+### 4. Credit Underwriting Policy Copilot (Grounded RAG)
+Query institutional underwriting rules and credit guidelines with strict grounded citations and hallucination guardrails.
+
+```http
+POST /api/policy/ask
+Content-Type: application/json
+
+{
+  "question": "What is the minimum net salary required for an applicant living in Pune (Tier-2)?"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "Answered",
+  "confidence_score": 92,
+  "answer": "According to [Clause 1.1: Minimum Monthly Net Income Thresholds]:\nApplicants must demonstrate minimum verifiable net monthly salary credited via banking channels: (a) Tier-1 Metros: INR 25,000 per month; (b) Tier-2 Cities (Pune, Ahmedabad, Jaipur, Lucknow, Nagpur, Indore, Kochi, Surat): INR 20,000 per month; (c) Tier-3 and Other Locations: INR 18,000 per month. Cash salaries are strictly ineligible.",
+  "citations": [
+    {
+      "clause_id": "Clause 1.1",
+      "title": "Minimum Monthly Net Income Thresholds",
+      "excerpt": "Tier-2 Cities (Pune, Ahmedabad, Jaipur, Lucknow, Nagpur, Indore, Kochi, Surat): INR 20,000 per month."
+    }
+  ]
+}
+```
+
+*Note: Queries violating underwriting scope or touching unsupported assets (e.g. cryptocurrency collateral) are rejected with `status: "NotFound"` and zero confidence, preventing LLM/retrieval hallucinations.*
+
+---
+
 ## 🔒 Security & Privacy (RBI / Compliance)
 
 - **Strict In-Memory Processing:** Uploaded documents are read as streams and never persisted to local disk or unencrypted temporary directories.
@@ -268,16 +300,17 @@ LoanDocAI/
 │   └── LoanDocAI.Api/
 │       ├── Evaluation/                 <- Accuracy scoring harness
 │       ├── Integration/                <- Downstream LOS client & Polly resilience
-│       ├── Models/                     <- Extraction & Reconciliation DTOs
+│       ├── Models/                     <- Extraction, Reconciliation & Policy DTOs
 │       ├── Security/                   <- HMAC-SHA256 validator (constant-time)
-│       ├── Services/                   <- Text extractor, classifier, pattern parser
-│       ├── wwwroot/                    <- Embedded Operator Dashboard (HTML/JS/Tailwind)
+│       ├── Services/                   <- Extractor, classifier, pattern parser, Policy QA RAG
+│       ├── wwwroot/                    <- Embedded Operator Dashboard & Policy Copilot
 │       └── Program.cs                  <- Minimal API endpoints & DI container
 ├── tests/
-│   └── LoanDocAI.Tests/                <- 31 xUnit integration & benchmark tests
+│   └── LoanDocAI.Tests/                <- 39 xUnit integration & benchmark tests
 ├── tools/
 │   └── LoanDocAI.DataGen/              <- QuestPDF deterministic synthetic data generator
 └── data/
+    ├── policies/                       <- Institutional credit underwriting rules (JSON)
     └── synthetic/
         ├── pdfs/                       <- 20 synthetic test PDFs
         └── truth/                      <- 20 ground-truth JSON benchmark targets

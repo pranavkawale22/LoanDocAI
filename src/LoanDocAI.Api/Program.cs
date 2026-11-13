@@ -22,6 +22,7 @@ builder.Services.AddSingleton<IPdfTextExtractor, PdfTextExtractor>();
 builder.Services.AddSingleton<IDocumentClassifier, DocumentClassifier>();
 builder.Services.AddSingleton<IDocumentExtractor, PatternDocumentExtractor>();
 builder.Services.AddSingleton<IIncomeReconciliationService, IncomeReconciliationService>();
+builder.Services.AddSingleton<IPolicyQaService, PolicyQaService>();
 
 // Downstream Integration with Polly v8 Resilience Pipeline
 builder.Services.Configure<LosClientOptions>(builder.Configuration.GetSection(LosClientOptions.SectionName));
@@ -115,6 +116,18 @@ app.MapPost("/api/reconcile", (ReconciliationRequest request, IIncomeReconciliat
     }
 
     var result = service.Reconcile(request.SalarySlip, request.BankStatement);
+    return Results.Ok(result);
+});
+
+// Grounded Policy Q&A Endpoint with Citations
+app.MapPost("/api/policy/ask", async (PolicyQuestionRequest request, IPolicyQaService policyService, CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Question))
+    {
+        return Results.BadRequest(new { error = "Question is required." });
+    }
+
+    var result = await policyService.AnswerQuestionAsync(request, ct);
     return Results.Ok(result);
 });
 

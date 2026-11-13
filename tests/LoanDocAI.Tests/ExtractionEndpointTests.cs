@@ -128,4 +128,51 @@ public class ExtractionEndpointTests(WebApplicationFactory<Program> factory) : I
         Assert.True(root.GetProperty("confidence_score").GetInt32() >= 90);
         Assert.Equal(4, root.GetProperty("checks").GetArrayLength());
     }
+
+    [Fact]
+    public async Task Post_policy_ask_with_valid_question_returns_grounded_answer_and_citations()
+    {
+        var client = factory.CreateClient();
+        var request = new { question = "What is the minimum net take home salary required in Pune Tier 2?" };
+
+        var response = await client.PostAsJsonAsync("/api/policy/ask", request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        using var json = JsonDocument.Parse(body);
+        var root = json.RootElement;
+
+        Assert.Equal("Answered", root.GetProperty("status").GetString());
+        Assert.True(root.GetProperty("confidence_score").GetInt32() >= 75);
+        Assert.True(root.GetProperty("citations").GetArrayLength() > 0);
+        Assert.Contains("Clause 1.1", root.GetProperty("answer").GetString());
+    }
+
+    [Fact]
+    public async Task Post_policy_ask_with_empty_question_returns_bad_request()
+    {
+        var client = factory.CreateClient();
+        var request = new { question = "   " };
+
+        var response = await client.PostAsJsonAsync("/api/policy/ask", request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Post_policy_ask_with_out_of_scope_query_returns_refusal()
+    {
+        var client = factory.CreateClient();
+        var request = new { question = "Can the borrower pledge Bitcoin crypto assets as collateral for this retail loan?" };
+
+        var response = await client.PostAsJsonAsync("/api/policy/ask", request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadAsStringAsync();
+        using var json = JsonDocument.Parse(body);
+        var root = json.RootElement;
+
+        Assert.Equal("NotFound", root.GetProperty("status").GetString());
+        Assert.Equal(0, root.GetProperty("confidence_score").GetInt32());
+    }
 }

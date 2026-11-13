@@ -69,7 +69,21 @@ document.addEventListener('DOMContentLoaded', () => {
     setupDemoModeToggle();
     setupFileInputs();
     document.getElementById('runReconcileBtn').addEventListener('click', runReconciliation);
+    setupPolicyCopilot();
 });
+
+function setupPolicyCopilot() {
+    const askBtn = document.getElementById('askPolicyBtn');
+    const input = document.getElementById('policyQueryInput');
+    if (askBtn && input) {
+        askBtn.addEventListener('click', askPolicy);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                askPolicy();
+            }
+        });
+    }
+}
 
 function setupDemoModeToggle() {
     const toggleBtn = document.getElementById('demoModeToggle');
@@ -298,4 +312,147 @@ function renderAuditScorecard(result) {
 function formatInr(val) {
     if (val === null || val === undefined) return 'N/A';
     return '₹' + Number(val).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// -------------------------------------------------------------
+// Policy Copilot Logic (Day 5)
+// -------------------------------------------------------------
+function setPolicyQuery(query) {
+    const input = document.getElementById('policyQueryInput');
+    if (input) {
+        input.value = query;
+        askPolicy();
+    }
+}
+
+async function askPolicy() {
+    const input = document.getElementById('policyQueryInput');
+    const query = input.value?.trim();
+    if (!query) {
+        alert('Please enter a policy question.');
+        return;
+    }
+
+    const container = document.getElementById('policyAnswerContainer');
+    const badge = document.getElementById('policyStatusBadge');
+    const confText = document.getElementById('policyConfidenceText');
+    const citationsContainer = document.getElementById('policyCitationsBadge');
+    const answerText = document.getElementById('policyAnswerText');
+
+    container.classList.remove('hidden');
+    badge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 animate-pulse';
+    badge.textContent = 'Searching Grounded Policy...';
+    confText.textContent = '';
+    citationsContainer.innerHTML = '';
+    answerText.textContent = 'Evaluating credit policy clauses and computing vector overlap...';
+
+    try {
+        let result;
+        if (isDemoMode) {
+            // Offline demo mode simulation fallback
+            result = simulatePolicyAnswer(query);
+        } else {
+            const resp = await fetch('/api/policy/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: query })
+            });
+            if (!resp.ok) {
+                const err = await resp.json();
+                throw new Error(err.error || `Server responded with ${resp.status}`);
+            }
+            result = await resp.json();
+        }
+
+        renderPolicyResult(result);
+    } catch (err) {
+        badge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30';
+        badge.textContent = 'Query Failed';
+        answerText.textContent = `Error querying credit policy: ${err.message}`;
+    }
+}
+
+function renderPolicyResult(result) {
+    const badge = document.getElementById('policyStatusBadge');
+    const confText = document.getElementById('policyConfidenceText');
+    const citationsContainer = document.getElementById('policyCitationsBadge');
+    const answerText = document.getElementById('policyAnswerText');
+
+    if (result.status === 'Answered') {
+        badge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5';
+        badge.innerHTML = '<i class="fa-solid fa-shield-check"></i> Grounded in Policy';
+    } else {
+        badge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1.5';
+        badge.innerHTML = '<i class="fa-solid fa-ban"></i> Refused (Guardrail / Out of Scope)';
+    }
+
+    const confScore = Number(result.confidence_score) || 0;
+    confText.textContent = `Retrieval Confidence: ${confScore}%`;
+
+    citationsContainer.innerHTML = '';
+    if (result.citations && result.citations.length > 0) {
+        result.citations.forEach(c => {
+            const span = document.createElement('span');
+            span.className = 'text-xs font-medium px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1';
+            span.innerHTML = `<i class="fa-solid fa-bookmark text-[10px]"></i> ${c.clause_id}: ${c.title}`;
+            citationsContainer.appendChild(span);
+        });
+    } else {
+        const span = document.createElement('span');
+        span.className = 'text-xs text-slate-500 italic';
+        span.textContent = 'No matching clauses';
+        citationsContainer.appendChild(span);
+    }
+
+    answerText.textContent = result.answer;
+}
+
+function simulatePolicyAnswer(query) {
+    const lower = query.toLowerCase();
+    if (lower.includes('bitcoin') || lower.includes('crypto')) {
+        return {
+            question: query,
+            answer: "Information not found in approved credit underwriting policy documentation.",
+            confidence_score: 0,
+            status: "NotFound",
+            citations: []
+        };
+    }
+    if (lower.includes('pune') || lower.includes('tier-2') || lower.includes('minimum salary') || lower.includes('minimum income')) {
+        return {
+            question: query,
+            answer: "According to [Clause 1.1: Minimum Monthly Net Income Thresholds]:\nApplicants must demonstrate minimum verifiable net monthly salary credited via banking channels: (a) Tier-1 Metros: INR 25,000 per month; (b) Tier-2 Cities (Pune, Ahmedabad, Jaipur, Lucknow, Nagpur, Indore, Kochi, Surat): INR 20,000 per month; (c) Tier-3 and Other Locations: INR 18,000 per month. Cash salaries are strictly ineligible.",
+            confidence_score: 92,
+            status: "Answered",
+            citations: [{
+                clause_id: "Clause 1.1",
+                title: "Minimum Monthly Net Income Thresholds",
+                excerpt: "Tier-2 Cities (Pune, Ahmedabad, ...): INR 20,000 per month."
+            }]
+        };
+    }
+    if (lower.includes('probation')) {
+        return {
+            question: query,
+            answer: "According to [Clause 2.2: Probation Period Policy]:\nApplicants currently under probationary status are ineligible for unsecured personal loans. EXCEPTION: Probation may be waived if the applicant possesses at least 24 months of continuous prior employment in the same industry and provides a confirmation letter or successful appraisal notice from the current employer.",
+            confidence_score: 95,
+            status: "Answered",
+            citations: [{
+                clause_id: "Clause 2.2",
+                title: "Probation Period Policy",
+                excerpt: "Applicants currently under probationary status are ineligible for unsecured personal loans..."
+            }]
+        };
+    }
+    return {
+        question: query,
+        answer: "Retrieved Policy Guidance:\nAll loan approvals must strictly adhere to the credit policy framework, including salary validation against bank credit inflows, FOIR assessment, and employment continuity checks.",
+        confidence_score: 80,
+        status: "Answered",
+        citations: [{
+            clause_id: "Clause 1.1",
+            title: "Minimum Monthly Net Income Thresholds",
+            excerpt: "Verifiable net monthly salary credited via banking channels..."
+        }]
+    };
 }
