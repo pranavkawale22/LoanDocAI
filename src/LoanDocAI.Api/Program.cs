@@ -1,8 +1,11 @@
 using LoanDocAI.Api;
+using LoanDocAI.Api.Health;
 using LoanDocAI.Api.Integration;
 using LoanDocAI.Api.Models;
 using LoanDocAI.Api.Security;
 using LoanDocAI.Api.Services;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +15,12 @@ builder.Services.AddOptions<AiOptions>()
     .BindConfiguration(AiOptions.SectionName)
     .ValidateDataAnnotations()
     .ValidateOnStart();
+
+// Enterprise Health Checks (Liveness and Readiness Probes)
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy("API process is alive and responsive."), tags: ["live"])
+    .AddCheck<PolicyHealthCheck>("policy_knowledge_base", tags: ["ready"])
+    .AddCheck<ExtractionHealthCheck>("extraction_engine", tags: ["ready"]);
 
 // Security & Webhook configuration
 builder.Services.Configure<WebhookOptions>(builder.Configuration.GetSection(WebhookOptions.SectionName));
@@ -58,6 +67,20 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Enterprise Health Probes for Orchestrators (Kubernetes / ECS / Docker)
+app.MapHealthChecks("/healthz", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live"),
+    ResponseWriter = HealthCheckJsonWriter.WriteResponse
+});
+
+app.MapHealthChecks("/readyz", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = HealthCheckJsonWriter.WriteResponse
+});
+
+// Backward-compatible lightweight health check
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 // Public Document Extraction Endpoint

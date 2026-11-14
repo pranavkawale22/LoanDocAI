@@ -480,3 +480,7 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Local scratch and resume files
+scratch/
+Pranav_Kawale_DotNet_Developer_Resume.*

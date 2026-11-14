@@ -1,7 +1,7 @@
 # LoanDocAI 🏦📄
 
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![Tests](https://img.shields.io/badge/Tests-39%20Passed%20(100%25)-emerald)](#automated-evaluation-benchmark)
+[![Tests](https://img.shields.io/badge/Tests-41%20Passed%20(100%25)-emerald)](#automated-evaluation-benchmark)
 [![Evaluation Benchmark](https://img.shields.io/badge/Accuracy-100.0%25-brightgreen)](#automated-evaluation-benchmark)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![GitHub](https://img.shields.io/badge/Repository-pranavkawale22%2FLoanDocAI-181717?logo=github)](https://github.com/pranavkawale22/LoanDocAI)
@@ -289,24 +289,48 @@ Content-Type: application/json
 
 ---
 
+## 🚀 Production Deployment & Containerization
+
+LoanDocAI is fully containerized as a hardened, non-root microservice (`USER app`, UID/GID 1654) compliant with enterprise banking and Kubernetes security standards.
+
+### Quickstart with Docker Compose
+```bash
+# Build and run the hardened production container
+docker compose up -d --build
+
+# Verify container health status
+docker compose ps
+```
+
+### Enterprise Health & Readiness Probes
+- **Liveness Probe (`GET /healthz`):** Verifies the process is responsive for container orchestrator restart triggers.
+- **Readiness Probe (`GET /readyz`):** Confirms in-memory extraction engines and credit policy knowledge bases are loaded before accepting live customer traffic.
+- **Operations & SRE Runbook:** For complete Kubernetes deployment manifests, environment variable specifications, and incident triage playbooks, consult [OPERATIONS.md](OPERATIONS.md).
+
+---
+
 ## 📁 Repository Structure
 
 ```
 LoanDocAI/
 ├── SPEC.md                             <- Production specification & evaluation criteria
 ├── README.md                           <- Enterprise architecture & user guide
+├── OPERATIONS.md                       <- SRE Operations Runbook & Kubernetes manifests
+├── Dockerfile                          <- Multi-stage hardened Alpine container
+├── docker-compose.yml                  <- Single-command local orchestration
 ├── LoanDocAI.sln                       <- .NET 10 solution file
 ├── src/
 │   └── LoanDocAI.Api/
 │       ├── Evaluation/                 <- Accuracy scoring harness
+│       ├── Health/                     <- Liveness & readiness probes (/healthz, /readyz)
 │       ├── Integration/                <- Downstream LOS client & Polly resilience
 │       ├── Models/                     <- Extraction, Reconciliation & Policy DTOs
 │       ├── Security/                   <- HMAC-SHA256 validator (constant-time)
 │       ├── Services/                   <- Extractor, classifier, pattern parser, Policy QA RAG
 │       ├── wwwroot/                    <- Embedded Operator Dashboard & Policy Copilot
-│       └── Program.cs                  <- Minimal API endpoints & DI container
+│       └── Program.cs                  <- Minimal API endpoints, Health checks & DI
 ├── tests/
-│   └── LoanDocAI.Tests/                <- 39 xUnit integration & benchmark tests
+│   └── LoanDocAI.Tests/                <- 41 xUnit integration, probe & benchmark tests
 ├── tools/
 │   └── LoanDocAI.DataGen/              <- QuestPDF deterministic synthetic data generator
 └── data/

@@ -1,0 +1,11 @@
+**/.git
+**/.vs
+**/.vscode
+**/bin
+**/obj
+data/synthetic/pdfs
+data/synthetic/truth
+tests/
+tools/
+*.log
+*.tmp

@@ -6,6 +6,9 @@ namespace LoanDocAI.Api.Services;
 
 public interface IPolicyQaService
 {
+    int ClauseCount { get; }
+    string PolicyName { get; }
+    bool IsLoaded { get; }
     Task<PolicyAnswerResult> AnswerQuestionAsync(PolicyQuestionRequest request, CancellationToken cancellationToken = default);
 }
 
@@ -20,6 +23,10 @@ public sealed class PolicyQaService : IPolicyQaService
 
     private readonly List<PolicyClause> _clauses = [];
     private string _policyName = "Credit Underwriting Guidelines";
+
+    public int ClauseCount => _clauses.Count;
+    public string PolicyName => _policyName;
+    public bool IsLoaded => _clauses.Count > 0;
 
     public PolicyQaService()
     {
