@@ -315,6 +315,7 @@ docker compose ps
 LoanDocAI/
 ├── SPEC.md                             <- Production specification & evaluation criteria
 ├── README.md                           <- Enterprise architecture & user guide
+├── EVALUATION.md                       <- Executive evaluation, ROI analysis & benchmark report
 ├── OPERATIONS.md                       <- SRE Operations Runbook & Kubernetes manifests
 ├── Dockerfile                          <- Multi-stage hardened Alpine container
 ├── docker-compose.yml                  <- Single-command local orchestration
